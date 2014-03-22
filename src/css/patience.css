@@ -1,0 +1,91 @@
+@charset "UTF-16";
+
+/* GENERIC */
+
+*
+{
+  margin           : 0;
+  padding          : 0;
+}
+
+body
+{
+  font-family      : 'Times New Roman', Times, Georgia, FreeSerif, serif;
+  vertical-align   : top;
+}
+
+/* CARDS */
+
+.card
+{
+  display          : inline-block;
+  position         : absolute;
+  width            : 3em;
+  height           : 5em;
+  background-color : white;
+  border-width     : 1px;
+  border-style     : solid;
+  border-color     : black;
+  overflow         : hidden;
+  cursor           : pointer;
+}
+
+.card.facedown
+{
+  background-image : url('images/cardback-blue.png');
+}
+
+.card.facedown .corner
+{
+  display:none;
+}
+
+/* NOTE: This is the reason for the UTF-16 charset at-rule. */
+.card[suit="♠"],
+.card[suit="♣"]
+{
+  color            : black;
+}
+
+.card[suit="♥"],
+.card[suit="♦"]
+{
+  color            : red;
+}
+
+.card .corner
+{
+  position         : absolute;
+  min-height       : 0px;
+  line-height      : 1.1;
+  user-select      : none;
+}
+
+.card .corner.tl
+{
+  top              : 0.1em;
+  left             : 0.2em;
+}
+
+.card .corner.br
+{
+  bottom           : 0.1em;
+  right            : 0.2em;
+}
+
+.card.draggedOverZone
+{
+  border-width     : 3px;
+  border-style     : solid;
+  border-color     : yellow;
+}
+
+/* ZONES */
+
+.zone
+{
+  position         : absolute;
+  width            : 3em;
+  height           : 5em;
+  background-color : beige;
+}

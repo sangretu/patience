@@ -1,0 +1,154 @@
+<notes>
+	<current>
+		<note name="animation prioritization">
+      I need some way to manage animations and prioritization; with an event-driven system and timed animations, there's going to be a lot of cases where multiple events could try to perform animations on an element at the same time.
+		</note>
+    <note name="card handler">
+      Need some kind of central event handler to move cards around, too many one-offs where I set z-index etc.
+		</note>
+    <note name="golf allows blocked card to be played">
+      Can drag and play blocked cards in golf. Good for testing z-index issues but needs to be fixed.
+      
+      This is complicated by the fact that jQuery UI's draggable API does not include a validation function...closest thing is a disable setting, and that's likely best managed by the event system I was contemplating. I guess I could hack it into the current model but it's kinda ugly. I guess I could use disable or cancel settings...cancel lets me use a selector, which might be best.
+		</note>
+    <note name="">
+		</note>
+	</current>
+	<archive>
+    <note name="json limitations">
+      Looks like JSON is not supposed to include function definitions, which sort of breaks my data model for game definitions. Maybe I could push everything into prototypes somehow? That sort of fixes the class definition but not the deal() function etc. I guess there's nothing keeping me from loading it as a regular .js file, but that breaks some of the dynamic features I had in mind. Probably still best for now though, as they are not critical.
+		</note>
+    <note name="separate framework from rules">
+      Next major step is maybe to get all the game-specific information into a single object, opening the way for multiple game types.
+      
+      First draft of this is in place, moving to archive.
+		</note>
+		<note name="chicken-and-egg issue">
+      There's some sort of chicken-and-egg problem with the deal function and the initActions...because of updatePlayable I think, cards are not getting the appropriate playable status initially. The whole updatePlayable model seems troublesome, triggering it by event might not be the best way to handle it, maybe set a flag and run on loop, with event-based disables?
+      
+      Moving to archive, I think this may be addressed by the current design, or at least isn't bugging me at the moment.
+		</note>
+		<note name="ugly flipping">
+      Flipping is ugly (although functional); it holds up movement animations and flips weirdly along the left edge instead of centered. Centering each card inside a container might fix the latter problem.
+      
+      Moving to archive because it's been improved...still could use some work (I think deserializing the animation helped but it still flips along an edge)
+		</note>
+		<note name="master deck object">
+      Having a master "deck" object is messing with my conceptualization, because I feel like I need to deal from the deck in the code to the deck on the screen. I could redefine it as a "cardset" or maybe the in-game deck is a "library". Or they could be one and the same, just dump the element of the code's deck into the dom.
+      
+      Moving this to archive because it does not require action. May reconsider later.
+		</note>
+    <note name="utf-16">
+      I've had a bunch of problems at various times getting the UTF-16 suit characters working correctly. I thought I had finally resolved it by adding @charset "UTF-16"; to the beginning of the CSS file, but something went awry recently that brings the problem back to the foreground. It would be nice to understand what variables are at play here so I have a checklist to work from at least.
+      
+      Had some success using javascript encoding provided by http://rishida.net/tools/conversion/ - I'll move this to the archive for now but plan to reopen it if future tweaks are necessary.
+		</note>
+    <note name="cancel drag z-index">
+      Bug: Starting a drag and then failing leaves the dragged card with the highest z-index, obscuring the stack.
+      
+      Tried fixing this by setting a temporary z-index for the helper object using the draggable API, but it seems it resets the z-index upon completion, even if another operation specifically sets it in the interim.
+      
+      Ok, so...3 options for helper.
+      
+      'original' - no helper, uses actual draggable element
+      'clone'    - makes a copy of the draggable element
+      function   - returns a helper element
+      
+      Using 'original' and the zIndex parameter causes z-index to reset after drop. Might be able to work around, but it seems messy.
+      The 'clone' doesn't seem to honor the zIndex parameter at all if in ++summit format (but does work with summit+10 etc), using the z-index of the draggable element. Also, clone looks kinda weird.
+      Not sure how I would use a function except to manually create a clone with a specified z-index, which seems too complex.
+      
+      So, I guess I want to use the original or a function that effectively returns the same thing with the right z-index, but the whole point of this was to "reset" the z-index if the drag was canceled.
+      
+      I guess the problem is that I'm using two different techniques to either set or unset the z-index; I need to be consistent. Since the draggable API doesn't seem to support the type of conditional z-index that I need, so I'll try setting it myself with start/stop events.
+      
+      Fixed with a slightly hacky solution, added rise() and fall() functions to Card, then calling rise() from start event and fall() from stop event, and hijacking the temporary z-index variable from within acquireCard to prevent fall() from resetting it. Messy code, but the system works.
+		</note>
+    <note name="promiscuous hand">
+      Hand accepts cards from anywhere. Useful for debugging but can't leave it like that.
+		</note>
+		<note name="dragging stacks">
+      Gonna need to be able to drag a stack of cards between piles somehow.
+		</note>
+		<note name="unflipping unflipped cards">
+      Bug - dragging the last card off a stack causes the next card to unflip, even if it is already unflipped.
+		</note>
+    <note name="double-click selection">
+      Bug: now that I've gotten double-clicking basically working, there seems to be some issue with what element is being double-clicked on, in particular when working overlapping cards. Top right corner seems to work, maybe not others? Looks like this is due to how I'm handling the event; trying to process the element clicked on rather than the listener.
+		</note>
+    <note name="facedown not relevant">
+      Bug: seems the "facedown" status is not being considered in all cases, as I was able to double-click on a facedown card and have it automatically move as if I had played it.
+		</note>
+		<note name="double-click to score">
+      Add double-clicking on a free card to send it to a score pile.
+      
+      Done, also automatically move to first acceptable zone. Might cause some issues though.
+		</note>
+		<note name="snooping deck">
+			Bug - It's possible to "snoop" the top card of the deck by dragging it over zones to see if it highlights.
+      
+      Resolved with "faceup" rule.
+		</note>
+		<note name="selectable indexes">
+      Bug: card indexes should not be selectable text, too easy to do it by accident.
+      
+      May have fixed this, at least in Chrome. Should test others. See http://stackoverflow.com/questions/6900124/make-some-text-unselectable-with-css
+		</note>
+		<note name="drag to self">
+			Bug - dragging a card to its own zone triggers flip etc.
+      
+      Not sure this is still true, can't think of an example where it would be possible with the current rule system.
+		</note>
+		<note name="dragging from deck is weird">
+      Not even sure this should be allowed, but misclicking on deck can cause a self-drag, i.e. flip top card on deck.
+      
+      Fixed with rules, deck does not accept cards.
+		</note>
+		<note name="add flipped stacks">
+      Flipped cards staged on stacks...are they separate zones or just different rules?
+      
+      Flipped is now a state cards can have, and rules system is flexible enough to select on this.
+		</note>
+		<note name="selection rules">
+      Need a way to determine which cards in a zone can be selected / dragged / whatever. Probably another ruleset, or add to the current one.
+      
+      I believe the current rule system addresses this, by allowing arbitrary rules.
+		</note>
+		<note name="click to deal">
+      Need to be able to click on a zone / card stack and have an action performed, like dealing from deck to hand.
+		</note>
+		<note name="zone rules">
+      Something in the zone needs to determine which, if any, cards can be dragged from it; this may need to coordinate with stuff outside the zone as well, perhaps based on game state and such. Using rules for this now.
+		</note>
+		<note name="zone rules">
+      Need a set of rules for dragging and dropping cards into a zone, probably some standardized ones that each zone could pick from, since there are common themes for these types of rules. Done, and they are chained.
+		</note>
+		<note name="deck not losing cards">
+      Bug - deck zone retains its list of cards even when they are moved to other zones.
+      
+      zones.deck.cards
+      var card = zones.deck.cards[51];
+      
+      Note...top card on zone deck is last card in array. Is that the problem?
+      No. The problem is probably that I explicitly overwrite the removeCard function in the deck zone. Dumbass.
+		</note>
+		<note name="cannot drag to deck">
+      Bug - dragging card to deck results in Cannot call method 'getElement' of undefined: line 345 - $(self.cards[self.cards.length-1].getElement()).draggable({ disabled: false });
+      
+      Solved, looks like this was a simple result of trying to operate on an empty stack.
+		</note>
+		<note name="card dragging">
+      Need some sort of indication of what will happen when a dragged card is released, possibly a highlighted area showing where it would go or which stack it would be placed in?
+      
+      Also, stop accepting cards on non-targets. Float back to the originating stack? See if there is an accept() function or something similar for the drag/drop capability, maybe I could have a specific set of functions that might be used for that based on the rules applying to a specific zone, much like I'm trying to do with card layouts. [Done; used draggable's "revert" option.]
+		</note>
+		<note name="card layout approach">
+      Since CSS can't be dynamic in the way I need it to, and I want to define key sizes using CSS, I can have the JavaScript determine what those sizes are and make dynamic changes accordingly. So, ensure CSS is loaded before JavaScript, then determine the size of a single card and set some global values based on that, and use those to calculate offsets. [Done: created temporary card.]
+      
+      As for the layout functions, one to get card position X of Y (with Y defaulting to X) gives adequate flexibility for any layout I can think of at the moment, and another to get overall zone size with Y cards contained should do the trick. [Done: seems to work well.]
+		</note>
+		<note name="card positioning">
+      With cards having absolute positioning, they do not affect the size of the container they are in; this means the way it is currently implemented, only a zone's upper left corner is significant to the cards... [Done: addressed with cardLayout's getDimensions() method.]
+		</note>
+	</archive>
+</notes>
