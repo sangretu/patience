@@ -1,0 +1,83 @@
+2014-03-28
+
+	Thinking it's a good idea to write up specs for key components. Off the top of my head, the JSON-AJAX template thing (really need to name this), Card, Zone, GameState, AppState, DataObject (serializable to JSON, no functions)?
+	
+	Hmm, the warrior Ajax of Agamemnon's army was known as the 'bulwark of the Mycenaeans'. How about Bulwark? I kinda like it. So if I define Bulwark v1.0, I have a spec for AJAX communications. Then if I define various data objects and give them appropriate names (assuming application namespace), that seems like the beginning of a communications API.
+	
+	Other elements of the program need to be better defined as well; there's currently a lot of bleed-over between components, which not only makes it hard to modify anything but also interferes with the ability to define each game type separately.
+	
+	Let's take a look at how it currently works. Key elements are:
+	
+	[Classes]
+		Zone
+		Card
+	
+	[Resources]
+		Utility
+		patience
+	
+	[Global variables]
+		summit
+		player
+		game
+		deck
+		heart
+		spade
+		diamond
+		club
+
+	[Global functions]
+		initPlayer
+		initGame
+		initMeasurements
+		initZones
+		initDeck
+		initActions
+	
+	Some of this clearly needs to be reorganized; the suits, for example, should be separate to allow for non-standard card games; the init functions should probably go into an object; there's inconsistency in how resources and classes are used and defined; and many of the global variables might work best inside a GameState or AppState type object.
+	
+	Here's how the components interact right now:
+	
+		[Global variables]
+			player is not used.
+			game is instantiated as one of the game types within patience, and is used to reference zones, rules, css, and the start function.
+			deck is referenced and modified within the start function, which is very bad, and appears to be instantiated within initDeck.
+			suits are referenced within Card and initDeck (I feel like subclassing Card to PlayingCard might make sense for this).
+		
+		[Resources]
+			patience is just used to instantiate game, using members as classes.
+			Utility is a mix of general purpose functions and reference data, these should be split out.
+		
+		[Classes]
+			Card is used everywhere.
+			Zone is also used all over the place.
+		
+		[Global functions]
+			initMeasurements is called automatically and actually modifies the Card class, seems messy.
+			initPlayer doesn't actually do what it says, rather, creates the selection box and adds it to the page.
+			initGame is triggered by the selection box, instantiates a game type, and calls the remaining init functions and the start function.
+			initZones simply adds each zone in the game object to the page, can probably move this elsewhere.
+			initDeck creates a standard deck of playing cards and shuffles them, probably can be moved somewhere too.
+			initActions is tricky, defines in a general sense what the player can do, need to evaluate this further.
+
+2014-03-29
+
+	How would I like the pieces to fit together? This might be better worked out on paper, but I'll try here for now.
+	
+	I'd like to limit global content to the main function and objects; no functions or variables, they should ideally all belong to something.
+	
+	A serializable GameState would be very useful in both saving / loading games and for potential server interactions (validation, remote storage, data collection, security checks).
+	
+	Similarly, player actions should be serializable, queued and processed locally for now but remotely later; this will require a data spec.
+	
+	I need to re-familiarize myself with JavaScript inheritance / subclassing and see how much of it is useful here, for data objects in particular.
+	
+	Still thinking about a standard element-object model, maybe with getElement in the object and either an object member of the element or a getObject function.
+	
+	The utility object is an interesting issue; some functions seem to belong in a separate general-purpose project, some are card game specific and need to be moved.
+	
+	Initialization stuff should be better defined and possibly split into other objects; it's unclear at this point whether the initial model of setting up dragging to and from each zone makes sense; keep in mind the complexity of not only rules evaluations but also jQuery UI's automatic checks.
+
+2014-04-28
+
+	Was thinking today about organizing the infrastructure into "tiers", using inheritance to establish layers of complexity, like snapshots in a VM. So tier 1 might consist of Zone and Piece objects, and a later tier might have GameZone and GamePiece, then maybe CardZone and Card inherited from those. Perhaps by separating functionality into tiers this way, I can make the infrastructure more portable, allowing other applications to choose their own "branching off point", and reduce the custom code I'm dealing with at the application level.
