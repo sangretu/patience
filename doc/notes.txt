@@ -100,3 +100,7 @@
 	Did some refactoring of my inheritance model, I'll skip the details here. Created new Zone and Piece classes that inherit from Component, now what features do they have? We're not at the Card stage yet, but certainly moving pieces between zones can be handled at this tier, right? And at what point will I need the action queue?
 	
 	Ok, I've got gainPiece/losePiece working, but saving animation, chaining, side effects etc for a later tier or implementation.
+
+  I guess this is a good a place as any to test git's merge capabilities. I already have uncommitted changes in today's notes on the other computer, we'll see what happens when they meet.
+  
+  So, Zone/Piece look good unless I want to add features to them vs wait for the next tier. WHat now?
