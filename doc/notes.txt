@@ -81,3 +81,9 @@
 2014-04-28
 
 	Was thinking today about organizing the infrastructure into "tiers", using inheritance to establish layers of complexity, like snapshots in a VM. So tier 1 might consist of Zone and Piece objects, and a later tier might have GameZone and GamePiece, then maybe CardZone and Card inherited from those. Perhaps by separating functionality into tiers this way, I can make the infrastructure more portable, allowing other applications to choose their own "branching off point", and reduce the custom code I'm dealing with at the application level.
+
+2014-04-29
+
+  I guess this is a good a place as any to test git's merge capabilities. I already have uncommitted changes in today's notes on the other computer, we'll see what happens when they meet.
+  
+  So, Zone/Piece look good unless I want to add features to them vs wait for the next tier. WHat now?
