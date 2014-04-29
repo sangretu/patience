@@ -81,3 +81,22 @@
 2014-04-28
 
 	Was thinking today about organizing the infrastructure into "tiers", using inheritance to establish layers of complexity, like snapshots in a VM. So tier 1 might consist of Zone and Piece objects, and a later tier might have GameZone and GamePiece, then maybe CardZone and Card inherited from those. Perhaps by separating functionality into tiers this way, I can make the infrastructure more portable, allowing other applications to choose their own "branching off point", and reduce the custom code I'm dealing with at the application level.
+	
+	At an early tier, I'm going to need object<->element translation and an action queue. Not sure if that needs to include the main loop code or if that can wait until later. There are a lot of chicken-and-egg problems associated with animations and real-time user actions; states change in unexpected ways, and must be handled gracefully or things start getting buggy and ugly.
+	
+	Looking at the object<->element translation first...
+	
+	I recently discovered that it was possible to attach objects directly to elements, which removes the need for a lookup feature between the two. Depending on how I use it though, it might necessitate some cleanup code for when an object/element pair is destroyed, to prevent memory leaks.
+	
+	At any rate, my most recent attempt on this was to set <object>.element = <element> and then <object>.element.object = <object> within <object>.getElement(), which is effectively when the element is initially created. I'm not convinced the naming convention is ideal, but the approach seems reasonable.
+	
+	Another feature I had in that method was the inclusion of arbitrary CSS on a specific element. While this seems useful, I'm not sure if the current approach (providing it as a constructor argument) is the best way to go about it. Also, when would it be necessary to set CSS in the code rather than in the CSS file? I suppose if you were trying to be dynamic...almost analog? I should see how I'm currently using it. Ah, I see. It was based on a previous design where I was trying to dynamically load each game type and using the main program exclusively as the engine; the model failed because I couldn't include functions in JSON files, although I may revisit it later. Anyway, the feature isn't necessary, although it is potentially useful. Actually, it might make it easier to keep things organized, rather than having a separate css file for each game type and having to worry about possibly de-registering styles when changing game types. I think I'll keep it.
+	
+	Now, both Zone and Piece will need the full getElement() feature, so it makes sense to have a parent object for them. What would that be? Do they have anything else in common? ID, although I need to turn that into UID or GUID. I could try merging the parent object with my previous concept of a Component.
+	
+	
+2014-04-29
+
+	Did some refactoring of my inheritance model, I'll skip the details here. Created new Zone and Piece classes that inherit from Component, now what features do they have? We're not at the Card stage yet, but certainly moving pieces between zones can be handled at this tier, right? And at what point will I need the action queue?
+	
+	Ok, I've got gainPiece/losePiece working, but saving animation, chaining, side effects etc for a later tier or implementation.
